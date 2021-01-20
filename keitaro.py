@@ -40,20 +40,17 @@ class Keitaro:
         return host + resource_endpoint
 
 
-    def build_custom_report(self, interval='today'):
+    def build_custom_report(self, interval='today',
+            grouping=['campaign', 'stream', 'landing'],
+            metrics=['clicks', 'stream_unique_clicks', 'conversions']):
         """ limit = YEAR-MONTH-DAY """
-        payload = {
-            'range': {'interval': interval},
-            'grouping': ['campaign', 'stream', 'landing'],
-            'metrics': [
-                'clicks',
-                'stream_unique_clicks', 
-                'conversions'
-            ]
-        }
         return utils.send_http_request(
             method='POST',
             url=self._build_request_url('report/build'),
             headers={'Api-Key': self.api_key},
-            payload=payload
+            payload={
+                'range': {'interval': Keitaro._interval_valid(interval)},
+                'grouping': grouping,
+                'metrics': metrics
+            }
         )
