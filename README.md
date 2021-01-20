@@ -7,16 +7,28 @@ $ git clone https://github.com/Infvmous/gsheets-export-from-keitaro.git
 2. Создать виртуальное окружение в директории проекта
 
 ```bash
-$ python3 -m venv env
+$ python -m venv env
 ```
 
-3. Создать файл `<НАЗВАНИЕ_ФАЙЛА>.sh` с переменными окружения
+3. Установить зависимости
 
 ```bash
-export KEITARO_API_KEY='admin api key'
-export GSHEETS_CLIENT_SECRET='google sheets client secret key'
+$ pip install -r requirements.txt
+```
+
+4. Создать файл `<НАЗВАНИЕ_ФАЙЛА>.sh` с переменными окружения
+
+```bash
+export KEITARO_HOST='домен, где установлен keitaro'
+export KEITARO_API_KEY='keitaro admin api ключ'
+export GSHEETS_API_KEY='секретный ключ google таблиц'
 python .
 ```
 
-4. Включить [Google Sheets API v4](https://developers.google.com/sheets/api/quickstart/python)
-   `
+5. Включить [Google Sheets API v4](https://developers.google.com/sheets/api/quickstart/python) в аккаунте
+
+6. Запустить скрипт
+
+```bash
+$ source `<НАЗВАНИЕ_ФАЙЛА>.sh`
+```

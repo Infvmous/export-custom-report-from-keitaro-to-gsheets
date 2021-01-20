@@ -1,28 +1,33 @@
 import os
 import json
-from operator import itemgetter
 
 import requests
 
 from datetime import datetime
+from typing import Dict
 
 
-def send_http_request(method, url, headers, payload=None):
+def send_http_request(method: str, url: str, headers: Dict,
+        payload: Dict=None):
+    """ Отправляет HTTP запрос на url с httml заголовками header и
+    телом запроса payload"""
     response = requests.request(method, url,
         headers=headers, data=json.dumps(payload))
     return response.json()
 
 
 def write_keitaro_report_to_file(json_report):
-    sorted_report = sort_report_by_clicks(json_report['rows'])
-    with open(build_reports_path(), 'w', encoding='utf-8') as f:
+    """ Записывает отсортированный отчет из keitaro в файл с
+    названием <год-месяц-день_часы-мин-сек>.json """
+    sorted_report = _sort_keitaro_report(json_report['rows'])
+    with open(_build_reports_path(), 'w', encoding='utf-8') as f:
         json.dump(sorted_report, f, sort_keys=False, indent=4, 
             ensure_ascii=False, separators=(',', ': '))
 
 
-def sort_report_by_clicks(json_report, key='clicks', reverse=True):
-    return sorted(json_report, key=lambda i: int(i[key]),
-        reverse=reverse)
+def build_request_url(api_url, *parts):
+    endpoint = '/'.join(str(part).rstrip('/') for part in parts)
+    return api_url + endpoint
 
 
 def get_env_variable(variable):
@@ -37,12 +42,17 @@ def get_current_datetime():
     return str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
 
-def get_current_dir():
+def _sort_keitaro_report(json_report, sort_by='clicks', reverse=True):
+    return sorted(json_report, key=lambda i: int(i[sort_by]),
+        reverse=reverse)
+
+
+def _get_current_dir():
     return os.getcwd()
 
 
-def build_reports_path(reports_dir='reports', ext='.json'):
-    return os.path.join(get_current_dir(), reports_dir,
+def _build_reports_path(reports_dir='reports', ext='.json'):
+    return os.path.join(_get_current_dir(), reports_dir,
         get_current_datetime() + ext)
 
 
