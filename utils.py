@@ -4,7 +4,8 @@ import json
 import requests
 
 from datetime import datetime
-from typing import Dict
+from typing import Dict, List
+from pprint import pprint
 
 
 def send_http_request(method: str, url: str, headers: Dict,
@@ -13,21 +14,31 @@ def send_http_request(method: str, url: str, headers: Dict,
     телом запроса payload"""
     response = requests.request(method, url,
         headers=headers, data=json.dumps(payload))
+    # print(response.status_code)
     return response.json()
 
 
 def write_keitaro_report_to_file(json_report):
     """ Записывает отсортированный отчет из keitaro в файл с
     названием <год-месяц-день_часы-мин-сек>.json """
-    sorted_report = _sort_keitaro_report(json_report['rows'])
     with open(_build_reports_path(), 'w', encoding='utf-8') as f:
-        json.dump(sorted_report, f, sort_keys=False, indent=4, 
+        json.dump(json_report, f, sort_keys=False, indent=4, 
             ensure_ascii=False, separators=(',', ': '))
+    return(json_report)
 
 
 def build_request_url(api_url, *parts):
     endpoint = '/'.join(str(part).rstrip('/') for part in parts)
     return api_url + endpoint
+
+
+def count_items(data_structure):
+    return len(data_structure)
+
+
+def replace_string(string, replace=' ',
+        replace_to=''):
+    return string.replace(replace, replace_to)
 
 
 def get_env_variable(variable):
@@ -38,12 +49,12 @@ def get_current_date():
     return str(datetime.date(datetime.now()))
 
 
-def get_current_datetime():
-    return str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+def get_current_datetime(time_format='%Y-%m-%d_%H-%M-%S'):
+    return str(datetime.now().strftime(time_format))
 
 
-def _sort_keitaro_report(json_report, sort_by='clicks', reverse=True):
-    return sorted(json_report, key=lambda i: int(i[sort_by]),
+def sort_keitaro_report(json_report, sort_by='clicks', reverse=True):
+    return sorted(json_report['rows'], key=lambda i: int(i[sort_by]),
         reverse=reverse)
 
 
@@ -54,6 +65,8 @@ def _get_current_dir():
 def _build_reports_path(reports_dir='reports', ext='.json'):
     return os.path.join(_get_current_dir(), reports_dir,
         get_current_datetime() + ext)
+
+
 
 
 

@@ -25,7 +25,7 @@ export GSHEETS_API_KEY='секретный ключ google таблиц'
 python .
 ```
 
-5. Включить [Google Sheets API v4](https://developers.google.com/sheets/api/quickstart/python) в аккаунте
+5. НАСТРОИТЬ АПИ
 
 6. Запустить скрипт
 

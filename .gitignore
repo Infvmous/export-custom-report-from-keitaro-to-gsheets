@@ -3,3 +3,5 @@ run.sh
 env
 __pycache__
 reports/
+credentials.json
+token.pickle
