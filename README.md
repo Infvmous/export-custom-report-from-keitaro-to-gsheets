@@ -19,13 +19,12 @@ $ pip install -r requirements.txt
 4. Создать файл `<НАЗВАНИЕ_ФАЙЛА>.sh` с переменными окружения
 
 ```bash
-export KEITARO_HOST='домен, где установлен keitaro'
-export KEITARO_API_KEY='keitaro admin api ключ'
-export GSHEETS_API_KEY='секретный ключ google таблиц'
+export KEITARO_HOST='Домен, на котором установлен Keitaro'
+export KEITARO_API_KEY='Keitaro Admin API ключ'
 python .
 ```
 
-5. НАСТРОИТЬ АПИ
+5. [Создать приложение в Google API, скачать credentials.json, необходимые для работы OAuth2 и Google Sheets, Drive APIs](https://developers.google.com/sheets/api/quickstart/python)
 
 6. Запустить скрипт
 
