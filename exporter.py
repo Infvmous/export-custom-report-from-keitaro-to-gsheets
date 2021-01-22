@@ -6,21 +6,22 @@ from gsheets import GSheets
 
 def main():
     # TODO: Взять текст из Keitaro.report_intervals
-    interval = input('''Укажите диапозон отчета \
-    \nНажмите Enter, чтобы сделать отчет за сегодня \
-    \n1 - за вчера \
-    \n2 - за текущая неделя \
-    \n3 - за последние 7 дней \
-    \n4 - за текущий месяц \
-    \n5 - за предыдущий месяц \
-    \n6 - за текущий год \
-    \n7 - за год \
-    \n8 - за все время\n''')
+    interval = utils.validate_input_on_enter(
+        input('''Укажите диапозон отчета \
+            \nНажмите Enter, чтобы сделать отчет за сегодня \
+            \n1 - за вчера \
+            \n2 - за текущая неделя \
+            \n3 - за последние 7 дней \
+            \n4 - за текущий месяц \
+            \n5 - за предыдущий месяц \
+            \n6 - за текущий год \
+            \n7 - за год \
+            \n8 - за все время\n'''))
 
-    # Если нажат enter (введена пустая строка)
-    if interval == '':
-        interval = 0
-
+    timeout = utils.validate_input_on_enter(
+        input('Задержка отправки HTTP запросов в сек.(по умолчанию 0.5)\n'), 0.5)
+    print(f'Выбрана задержка {timeout}')
+    
     # Инициализирую приложения кейтаро
     keitaro = Keitaro()
     # Инициализирую гугл таблицы апи
@@ -39,11 +40,11 @@ def main():
     # Создаю и заполняю таблицы для отдельных групп
     for group, group_report in group_reports.items():
         # Создаю пустую таблицу в гугл таблицах с названием {group}{date}
-        spreadsheet = gsheets.create_spreadsheet(group)
+        spreadsheet = gsheets.create_spreadsheet(interval, group)
 
         # Экспортирую отчет в заранее созданную гугл таблицу
         gsheets.export_keitaro_report_to_spreadsheet(spreadsheet,
-            group_report, timeout=0.5)
+            group_report, timeout=timeout)
         
     
     

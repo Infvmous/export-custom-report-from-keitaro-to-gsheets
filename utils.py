@@ -32,6 +32,12 @@ def build_request_url(api_url, *parts):
     return api_url + endpoint
 
 
+def validate_input_on_enter(input_value, default_value=0):
+    if input_value == '':
+        return default_value
+    return input_value
+
+
 def count_items(data_structure):
     return len(data_structure)
 

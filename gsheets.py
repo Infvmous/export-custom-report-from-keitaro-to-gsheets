@@ -34,10 +34,11 @@ class GSheets:
         self.creds = self._get_creds()
         self.service = self._get_service() 
 
-    def create_spreadsheet(self, name=''):
+    def create_spreadsheet(self, interval_index, name=''):
+        interval = Keitaro._interval_valid(interval_index)[1]
         spreadsheet = {
             'properties': {
-                'title': f'{name} {utils.get_current_date()}'
+                'title': f'{name} {utils.get_current_date()} ({interval})'
             }
         }
         spreadsheet = self.service.spreadsheets().create(
@@ -52,6 +53,7 @@ class GSheets:
         2 создать листы для потоков + заполнить заголовки строк GSheets.row_headings (Battle Flow, Bots, Замыкающий ботов)
         3 Заполнить
         """
+        timeout = int(timeout)
         spreadsheet_id = GSheets.get_spreadsheet_id(spreadsheet)
         for stream in GSheets.streams:
             # Получить репорт по имени потока
@@ -97,11 +99,7 @@ class GSheets:
         return self._send_spreadsheet_request(spreadsheet_id, body)
 
     def _add_headings_to_columns(self, table):
-        try:
-            table[0] = list(GSheets.row_headings)
-        except IndexError:
-            print(table)
-            return
+        table.insert(0, list(GSheets.row_headings))
         return table
 
     def _send_spreadsheet_request(self, spreadsheet_id, request=None, values=None, timeout=0):
