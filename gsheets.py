@@ -61,17 +61,34 @@ class GSheets:
                 sheet_name=replaced_stream_name,
                 columns_count=utils.count_items(GSheets.row_headings))
 
-            # TODO: Расширить заголовок первого столбца
-
             # Заполнить созданный лист
             values = self._add_headings_to_columns(
                 Keitaro.parse_report_rows(sorted_report))
             filled_sheet = self._write_to_sheet(spreadsheet_id,
                 range_name=f'{replaced_stream_name}!A1:G{len(values)}',
                 values=values)
-            
+  
             # TODO: Удалить нулевой лист
             # deleted_first_list = self._delete_sheet(spreadsheet_id, 0)
+
+    def _change_cell_size(self, spreadsheet_id,
+            sheet_id, start_index, end_index, 
+            pixel_size, dimension='COLUMNS'):
+        body = {
+            'updateDimensionProperties': {
+                'range': {
+                    'sheetId': sheet_id,
+                    'dimension': dimension,
+                    'startIndex': start_index,
+                    'endIndex': end_index
+                },
+                'properties': {
+                    'pixelSize': pixel_size
+                },
+                'fields': 'pixelSize'
+            }
+        }
+        return self._send_spreadsheet_request(spreadsheet_id, body)
 
     def _add_headings_to_columns(self, table):
         table[0] = list(GSheets.row_headings)
@@ -108,7 +125,10 @@ class GSheets:
         }
         sheet = self._send_spreadsheet_request(spreadsheet_id, body)
         sheet_name = GSheets.get_sheet_name(sheet)
-        print(f'Создан лист {sheet_name} с ID: {GSheets.get_sheet_id(sheet)}')
+        sheed_id = GSheets.get_sheet_id(sheet)
+        print(f'Создан лист {sheet_name} с ID: {sheed_id}')
+        # Расширить заголовок первого столбца
+        self._change_cell_size(spreadsheet_id, sheed_id, 0, 1, 450)
         return sheet_name
     
     def _delete_sheet(self, spreadsheet_id, sheet_id):

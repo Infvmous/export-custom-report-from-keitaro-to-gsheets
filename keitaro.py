@@ -77,6 +77,10 @@ class Keitaro:
             url = f'{self.host}/{Keitaro.api_endpoint}'
         return url
 
+    def _get_campaign_group(self):
+        # TODO: Создавать документы для отдельных груп кейтаро
+        pass
+
     def build_custom_report(self,
             interval_index: int=0,
             timezone: str='Europe/Moscow',
