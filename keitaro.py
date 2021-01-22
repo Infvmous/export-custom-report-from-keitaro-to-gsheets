@@ -58,7 +58,8 @@ class Keitaro:
                 row['clicks'],
                 row['stream_unique_clicks'],
                 row['conversions'],
-                row['sales']
+                row['sales'],
+                row['campaign_group']
             ]
             rows.append(parsed_row)
         return rows
@@ -77,14 +78,38 @@ class Keitaro:
             url = f'{self.host}/{Keitaro.api_endpoint}'
         return url
 
-    def _get_campaign_group(self):
-        # TODO: Создавать документы для отдельных груп кейтаро
-        pass
+    def sort_report_by_groups(self, report):
+        """
+        group_report = {
+                'campaign_name': [
+                    {
+                        "campaign": "ADWORDS - HU+",
+                        "stream": "Battle Flow",
+                        "landing": "1-den-cardiol",
+                        "campaign_group": "leadbit-cod",
+                        "clicks": "204",
+                        "stream_unique_clicks": "132",
+                        "conversions": "0",
+                        "sales": "0",
+                        "landing_id": "6"
+                    },
+                   ...
+                ]
+            }
+        """
+        group_reports = {}
+        for item in report:
+            campaign_group = item['campaign_group']
+            if campaign_group not in group_reports:
+                # Создаю ключ-лист с названием группы 
+                group_reports[campaign_group] = []
+            group_reports[campaign_group].append(item)       
+        return group_reports
 
     def build_custom_report(self,
             interval_index: int=0,
             timezone: str='Europe/Moscow',
-            grouping: List=['campaign', 'stream', 'landing'],
+            grouping: List=['campaign', 'stream', 'landing', 'campaign_group'],
             metrics: List=['clicks', 'stream_unique_clicks', 'conversions', 'sales']):
         """ Получает кастомный отчет из keitaro за интервал времени interval,
         с часовым поясом timezone, группировкой grouping (см. документацию

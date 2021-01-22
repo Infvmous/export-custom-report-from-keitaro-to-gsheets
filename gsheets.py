@@ -10,6 +10,8 @@ from keitaro import Keitaro
 
 from pprint import pprint
 
+import time
+
 
 class GSheets:
     row_headings = (
@@ -19,7 +21,8 @@ class GSheets:
         'Клики',
         'Уник. клики потока',
         'Конверсии',
-        'Продажи'
+        'Продажи',
+        'Группа'
     )
     streams = ('Battle Flow', 'Bots', 'Замыкающий ботов')
 
@@ -31,10 +34,10 @@ class GSheets:
         self.creds = self._get_creds()
         self.service = self._get_service() 
 
-    def create_spreadsheet(self):
+    def create_spreadsheet(self, name=''):
         spreadsheet = {
             'properties': {
-                'title': f'Отчет за {utils.get_current_date()}'
+                'title': f'{name} {utils.get_current_date()}'
             }
         }
         spreadsheet = self.service.spreadsheets().create(
@@ -43,7 +46,7 @@ class GSheets:
         # print(self.service.spreadsheets().get(spreadsheetId=GSheets.get_spreadsheet_id(spreadsheet)).execute())
         return spreadsheet
 
-    def export_keitaro_report_to_spreadsheet(self, spreadsheet, report):
+    def export_keitaro_report_to_spreadsheet(self, spreadsheet, report, timeout=0):
         """ 
         1 Взять стату по потокам отдельно
         2 создать листы для потоков + заполнить заголовки строк GSheets.row_headings (Battle Flow, Bots, Замыкающий ботов)
@@ -58,15 +61,18 @@ class GSheets:
             replaced_stream_name = utils.replace_string(stream)
             # Создать лист с именем stream
             sheet = self._add_new_sheet(spreadsheet_id=spreadsheet_id, rows=sorted_report,
-                sheet_name=replaced_stream_name,
+                sheet_name=replaced_stream_name, timeout=timeout,
                 columns_count=utils.count_items(GSheets.row_headings))
 
             # Заполнить созданный лист
             values = self._add_headings_to_columns(
                 Keitaro.parse_report_rows(sorted_report))
-            filled_sheet = self._write_to_sheet(spreadsheet_id,
-                range_name=f'{replaced_stream_name}!A1:G{len(values)}',
-                values=values)
+            
+            # Если отчетность не пуста, добавить в лист
+            if values:
+                filled_sheet = self._write_to_sheet(spreadsheet_id,
+                    range_name=f'{replaced_stream_name}!A1:H{len(values)}',
+                    values=values, timeout=timeout)
   
             # TODO: Удалить нулевой лист
             # deleted_first_list = self._delete_sheet(spreadsheet_id, 0)
@@ -91,27 +97,33 @@ class GSheets:
         return self._send_spreadsheet_request(spreadsheet_id, body)
 
     def _add_headings_to_columns(self, table):
-        table[0] = list(GSheets.row_headings)
+        try:
+            table[0] = list(GSheets.row_headings)
+        except IndexError:
+            print(table)
+            return
         return table
 
-    def _send_spreadsheet_request(self, spreadsheet_id, request=None, values=None):
+    def _send_spreadsheet_request(self, spreadsheet_id, request=None, values=None, timeout=0):
         body = self._build_request_body(request, values)
+        time.sleep(timeout)
         response = self.service.spreadsheets().batchUpdate(
             spreadsheetId=spreadsheet_id, body=body).execute()
         return response
 
-    def _write_to_sheet(self, spreadsheet_id, range_name, values):
+    def _write_to_sheet(self, spreadsheet_id, range_name, values, timeout=0):
         body = {
             'values': values,
             'majorDimension': 'ROWS'
         }
+        time.sleep(timeout)
         result = self.service.spreadsheets().values().update(
             spreadsheetId=spreadsheet_id, range=range_name,
             valueInputOption='USER_ENTERED', body=body).execute()
         print(f'{result.get("updatedCells")} ячеек обновлено')
 
     def _add_new_sheet(self, spreadsheet_id, sheet_name, rows,
-            columns_count=None, rows_count=None):
+            columns_count=None, rows_count=None, timeout=0):
         body = {
             'addSheet': {
                 'properties': {
@@ -123,7 +135,7 @@ class GSheets:
                 }    
             }
         }
-        sheet = self._send_spreadsheet_request(spreadsheet_id, body)
+        sheet = self._send_spreadsheet_request(spreadsheet_id, body, timeout=timeout)
         sheet_name = GSheets.get_sheet_name(sheet)
         sheed_id = GSheets.get_sheet_id(sheet)
         print(f'Создан лист {sheet_name} с ID: {sheed_id}')
